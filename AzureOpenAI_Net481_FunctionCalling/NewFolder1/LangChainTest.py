@@ -1,5 +1,5 @@
 ﻿from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import create_openai_functions_agent, AgentExecutor
+from langchain.agents import create_openai_functions_agent, AgentExecutor, load_tools
 from langchain.memory import ConversationBufferMemory
 from langchain_core.runnables import Runnable
 from langchain_openai import AzureChatOpenAI
@@ -23,19 +23,12 @@ def prime_factors(n):
 def sum_of_numbers(numbers):
     # numbers がリストの場合、また文字列の場合も処理可能
     if isinstance(numbers, str):
-        nums = [int(x.strip()) for x in numbers.strip("[]").split(",")]
+        nums = [int(x.strip()) for x in numbers.strip("[]").split("+")]
     elif isinstance(numbers, list):
         nums = numbers
     else:
         raise ValueError("Invalid input for sum_of_numbers")
     return sum(nums)
-
-
-# ツール登録
-tools = [
-    Tool(name="prime_factors", func=prime_factors, description="Factorize a given integer"),
-    Tool(name="sum_of_numbers", func=sum_of_numbers, description="Sum a list of numbers"),
-]
 
 # LLM 初期化
 llm = AzureChatOpenAI(
@@ -44,6 +37,12 @@ llm = AzureChatOpenAI(
     api_version="2024-12-01-preview",
     temperature=0.7
 )
+
+# ツール登録
+tools = [
+    Tool(name="prime_factors", func=prime_factors, description="Factorize a given integer"),
+    Tool(name="sum_of_numbers", func=sum_of_numbers, description="Sum a list of numbers"),
+]+load_tools(["llm-math"], llm = llm)
 
 # メモリ定義
 memory = ConversationBufferMemory(
@@ -81,5 +80,9 @@ print(resp1["output"])
 resp2 = agent_executor.invoke({"input": "その算出した数を2倍にしてほしいです。関数使わずに"})
 print(resp2["output"])
 
+resp3 = agent_executor.invoke({"input": "その算出した数を0.43乗してほしいです。"})
+print(resp3["output"])
 
+#入力形式が結構ランダム
+#ex)二つ目のinvokingで引数に[2,2,3,3,5]入れたり、[2+2+3+3+5]入れたり...
 print(memory.load_memory_variables({}))
