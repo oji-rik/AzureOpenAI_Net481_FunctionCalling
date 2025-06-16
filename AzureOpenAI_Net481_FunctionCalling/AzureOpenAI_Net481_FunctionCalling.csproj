@@ -103,6 +103,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="NewFolder1\LangChainTest.py" />
     <Compile Include="Program.cs" />
     <Compile Include="Program_2.2.0.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
