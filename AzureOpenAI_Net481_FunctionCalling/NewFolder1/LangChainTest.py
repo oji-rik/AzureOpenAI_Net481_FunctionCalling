@@ -59,11 +59,17 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 # Agentの作成
+# Agentの種類：AgentType.OPENAI_FUNCTIONS
+# 特徴：OpenAIのFunction Callingに対応。LangChainが関数の選択と入力の構築を自動化。
+# 使用LLM：ChatOpenAI / AzureChatOpenAI など Function対応モデル
 agent = create_openai_functions_agent(
     llm=llm,
     tools=tools,
     prompt=prompt
 )
+
+#複雑な推論やステップバイステップが必要	create_react_agent
+#情報検索や調査系の質問を扱いたい	create_self_ask_with_search_agent
 
 # AgentExecutorの作成
 agent_executor = AgentExecutor(
