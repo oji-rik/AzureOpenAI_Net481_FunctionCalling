@@ -20,15 +20,30 @@ def prime_factors(n):
     return factors
 
 # 合計ツール
-def sum_of_numbers(numbers):
-    # numbers がリストの場合、また文字列の場合も処理可能
-    if isinstance(numbers, str):
-        nums = [int(x.strip()) for x in numbers.strip("[]").split("+")]
-    elif isinstance(numbers, list):
-        nums = numbers
-    else:
-        raise ValueError("Invalid input for sum_of_numbers")
+    def sum_of_numbers(numbers):
+        if isinstance(numbers, list):
+    # すでにリストならそのまま合計
+            return sum(numbers)
+    
+        elif isinstance(numbers, str):
+    # [] を除去して空白を除き、数式として評価を試みる
+            cleaned = numbers.strip("[]").replace(" ", "")
+            
+    # 式として評価できる場合（例: 2+3+4）
+    try:
+    return eval(cleaned)
+    except Exception:
+    pass
+        
+# カンマ区切りとして処理（例: "2,3,4"）
+    try:
+    nums = [int(x.strip()) for x in cleaned.split(",")]
     return sum(nums)
+    except Exception:
+    raise ValueError(f"String形式の解釈に失敗しました: {numbers}")
+    
+    else:
+    raise ValueError("Invalid input type for sum_of_numbers. Supported types: list or str")
 
 # LLM 初期化
 llm = AzureChatOpenAI(
@@ -79,16 +94,34 @@ agent_executor = AgentExecutor(
     verbose=True
 )
 
-# 実行
-resp1 = agent_executor.invoke({"input": "360を素因数分解したときの、すべての素因数の総和を求めてください。"})
-print(resp1["output"])
+# ==========================
+# 対話モード：Consoleから入力
+# ==========================
+print("対話モードを開始します。'exit' または '終了' と入力すると終了します。")
 
-resp2 = agent_executor.invoke({"input": "その算出した数を2倍にしてほしいです。関数使わずに"})
-print(resp2["output"])
+while True:
+user_input = input("あなた: ")
 
-resp3 = agent_executor.invoke({"input": "その算出した数を0.43乗してほしいです。"})
-print(resp3["output"])
+if user_input.lower() in {"exit", "quit", "終了"}:
+print("対話モードを終了します。")
+break
 
-#入力形式が結構ランダム
-#ex)二つ目のinvokingで引数に[2,2,3,3,5]入れたり、[2+2+3+3+5]入れたり...
-print(memory.load_memory_variables({}))
+try:
+response = agent_executor.invoke({"input": user_input})
+print("アシスタント:", response["output"])
+except Exception as e:
+print(f"エラーが発生しました: {e}")
+
+# # 実行
+# resp1 = agent_executor.invoke({"input": "360を素因数分解したときの、すべての素因数の総和を求めてください。"})
+# print(resp1["output"])
+
+# resp2 = agent_executor.invoke({"input": "その算出した数を2倍にしてほしいです。関数使わずに"})
+# print(resp2["output"])
+
+# resp3 = agent_executor.invoke({"input": "その算出した数を0.43乗してほしいです。"})
+# print(resp3["output"])
+
+# #入力形式が結構ランダム
+# #ex)二つ目のinvokingで引数に[2,2,3,3,5]入れたり、[2+2+3+3+5]入れたり...
+# print(memory.load_memory_variables({}))
